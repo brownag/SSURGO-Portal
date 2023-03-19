@@ -1,0 +1,20 @@
+2023-01-31 15:13:50,822 -- template_logger -- INFO -- Log __main___RunMode.GET_USAGE.log started. ApplicationVersion: 1.2.3.4; SQLiteSSURGOTemplateVersion: 5.0; SSURGOVersion: 2.3.3
+2023-01-31 15:13:50,822 -- template_logger -- INFO -- dispatch called with requestKey=getusage in RunMode.GET_USAGE, next log record contains JSON request.
+2023-01-31 15:13:50,822 -- template_logger -- INFO -- {"request": "getusage", "inquireabout": "?"}
+2023-01-31 15:13:50,822 -- template_logger -- INFO -- Request getusage was successful
+2023-01-31 15:13:50,822 -- template_logger -- INFO -- Application stopping.
+2023-01-31 15:14:07,042 -- template_logger -- INFO -- Log __main___RunMode.GET_USAGE.log started. ApplicationVersion: 1.2.3.4; SQLiteSSURGOTemplateVersion: 5.0; SSURGOVersion: 2.3.3
+2023-01-31 15:14:07,042 -- template_logger -- INFO -- dispatch called with requestKey=getusage in RunMode.GET_USAGE, next log record contains JSON request.
+2023-01-31 15:14:07,042 -- template_logger -- INFO -- {"request": "getusage", "inquireabout": "ogjavascripterror"}
+2023-01-31 15:14:07,042 -- template_logger -- INFO -- Request getusage was successful
+2023-01-31 15:14:07,050 -- template_logger -- INFO -- Application stopping.
+2023-01-31 15:14:16,250 -- template_logger -- INFO -- Log __main___RunMode.GET_USAGE.log started. ApplicationVersion: 1.2.3.4; SQLiteSSURGOTemplateVersion: 5.0; SSURGOVersion: 2.3.3
+2023-01-31 15:14:16,250 -- template_logger -- INFO -- dispatch called with requestKey=getusage in RunMode.GET_USAGE, next log record contains JSON request.
+2023-01-31 15:14:16,250 -- template_logger -- INFO -- {"request": "getusage", "inquireabout": "ogjavascripterror"}
+2023-01-31 15:14:16,258 -- template_logger -- INFO -- Request getusage was successful
+2023-01-31 15:14:16,260 -- template_logger -- INFO -- Application stopping.
+2023-01-31 15:14:30,876 -- template_logger -- INFO -- Log __main___RunMode.GET_USAGE.log started. ApplicationVersion: 1.2.3.4; SQLiteSSURGOTemplateVersion: 5.0; SSURGOVersion: 2.3.3
+2023-01-31 15:14:30,876 -- template_logger -- INFO -- dispatch called with requestKey=getusage in RunMode.GET_USAGE, next log record contains JSON request.
+2023-01-31 15:14:30,876 -- template_logger -- INFO -- {"request": "getusage", "inquireabout": "logjavascripterror"}
+2023-01-31 15:14:30,876 -- template_logger -- INFO -- Request getusage was successful
+2023-01-31 15:14:30,891 -- template_logger -- INFO -- Application stopping.

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset="UTF-8">
+    <title>SSURGO Portal</title>
+    <link rel="icon" href="/static/images/ncss.svg"> <!--fav.icon-->
+    <link rel="stylesheet" href="/static/css/ssurgo_portal_style.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+</head>
+<body>
+    <!------------------ Home Page ------------------->
+    <div id="homePageContainer">
+        <div class="container">
+            <!--TODO: remove div class="row"-->
+            <div class="row">            
+                <!--Side menu selection options-->
+                <div class="col-3" role="navigation" aria-label="Select SSURGO Datasets to Import">
+                    <div>
+                        <label for="selectedDatabaseNameLeftPane" class="leftPaneMenuLabels"><h2 id="selectedDatabaseNameLeftPaneTitle">Step 1: Select or Create a Database</h2></label>
+                        <form id='getUserDatabaseModal' class="leftPaneInputsMenu" method="post">   
+                            <input type="text" id="selectedDatabaseNameLeftPane" class="leftPaneSelectedOptions" placeholder="Select Database..." disabled="true">
+                            <button type="button" aria-label="Select or Create a Database Button" id="selectDatabaseBrowseBtn" class="btn leftPaneBtns toggleDisableOnLoad" onclick="initializeTreeView('databaseTreeViewTable', 'getdatabaseinventory')">
+                                Browse
+                            </button>
+                        </form>
+                        <label for="selectedFolderName" class="leftPaneMenuLabels"><h2 id="selectedFolderNameTitle">Step 2: Select Location of SSURGO Data</h2></label>
+                        <form id='getFolderList' class="leftPaneInputsMenu" method="post">   
+                            <input type="text" id="selectedFolderName" class="leftPaneSelectedOptions" placeholder="Choose SSURGO Data folder..." disabled="true">
+                            <button type="button" aria-label="Select Location of SSURGO Data Button" id="selectedFolderNameBrowseBtn" class="btn leftPaneBtns toggleDisableOnLoad" disabled="true" onclick="initializeTreeView('importTreeViewTable', 'pretestimportcandidates')">
+                                Browse
+                            </button>
+                        </form>
+                        <p><i>NOTE: It is strongly recommended that you only have SSURGO Data in your selected SSURGO Data folder.</i></p>
+                    </div>
+                    <div id="importOptionsContainer" class="advancedOptions">   
+                        <button id="importBtn" class="btn toggleDisableOnLoad" onclick="importCandidates()" disabled>Import SSURGO Data</button> 
+                        <button id="importAdvancedOptionsBtn" data-bs-toggle="collapse" data-bs-target="#importAdvancedOptions" class="collapsableContainerBtn btn toggleDisableOnLoad" disabled><p>Advanced Import Options</p></button>
+                        <div id="importAdvancedOptions"class="collapsableContainer collapse">
+                            <div>                                
+                                <input type="checkbox" id="loadTabularData">
+                                <label for="loadTabularData">Load Tabular Data Only</label>
+                            </div>
+                            <!--
+                                This will be implemented Post-Prototype
+                                TODO: Enable spatial sort in SSURGO Portal UI
+                                <div>
+                                <input type="checkbox" id="spatialSort">
+                                <label for="spatialSort">Enable Spatial Sort</label>
+                            </div>-->
+                            <div>
+                                <input type="checkbox" id="dissolve">
+                                <label for="dissolve">Disable Dissolve</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="includeInterpretationSubRules">
+                                <label for="includeInterpretationSubRules">Include Interpretation Sub Rules</label>
+                            </div>
+                            <p id="advancedOptionsInfoMessage" class="warningMessage"><i>These options are rarely used. Please refer to the <a href="javascript:toggleHelpPaneContent('homePageHelpPaneContent')" id="advancedOptionsHelpBtn" class="helpPaneBtn advancedOptionsHelpMenuBtn" title="Open Help Menu">Help Menu</a> for more information.</i></p>
+                        </div>                        
+                    </div>
+                    <div id="databaseOptionsContainer" class="advancedOptions" style="display: none;">
+                        <button id="deleteBtn" class="btn toggleDisableOnLoad" onclick="deleteCandidates()" disabled>Delete SSURGO Data</button>
+                    </div>
+                    <div id="nrcsLogoContainer">
+                        <img id="nrcsLogo" src="/static/images/nrcs-color-lockup.svg" alt="NRCS Logo"/>
+                    </div>
+                </div>
+                <!--End Side menu selection options-->
+                <!-- Table container -->
+                <div class="col-9" role="main">
+                    <div class="col-12 topHeader">       
+                        <h1 class="applicationTitle">
+                            <button type="button" id="toggleContactUs" style="text-align: left" class="helpPaneBtn contactUs" title="Contact Us" onclick="toggleContactUs()">
+                                Contact Us
+                            </button>
+                            <u id="pageTitle">SSURGO Portal</u></br>
+                            Your chosen database is: <b class="selectedDatabaseNameTopHeader" id='selectedDatabaseNameTopHeader'>No Database Selected</b>
+                            <button type="button" id="toggleHomeHelpPane" class="btn helpPaneBtn" title="Help Page" onclick="toggleHelpPaneContent('homePageHelpPaneContent')">
+                                <img src="/static/images/QuestionMark.svg" alt="Home Page Help Button"/>
+                            </button>
+                        </h1>                        
+                    </div>
+                    <!-- nav-pills to select tables on Home Page -->
+                    <ul class="nav nav-pills mb-3" role="tablist">
+                        <button type="button" class="btn toggleDisableOnLoad" id="refreshBtn" aria-label="Refresh Import SSURGO Data Table" style="display: none"><img title="Refresh Import SSURGO Data Table" src="/static/images/refreshIcon.svg" alt="Refresh Import SSURGO Data Table"></button>
+                        <li class="nav-item" role="presentation">
+                            <button id="importNavLink" class="nav-link active" data-bs-toggle="pill" data-bs-target="#pillsImportTable" type="button" role="tab" aria-controls="pillsImportTable" aria-selected="true">Import SSURGO Data</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button id="databaseNavLink" class="nav-link" data-bs-toggle="pill" data-bs-target="#pillsDatabaseTable" type="button" role="tab" aria-controls="pillsDatabaseTable" aria-selected="false">SSURGO Data in Database</button>
+                        </li>
+                    </ul>
+                    <!--End nav-pills-->
+                    <!-- Tables on Home Page -->
+                    <div class="tab-content"> 
+                        <div class="tab-pane fade show active" id="pillsImportTable" role="tabpanel" aria-labelledby="pillsImportTable">
+                                <button id="toggleErrorDiv" data-bs-toggle="collapse" data-bs-target="#errorDiv" class="collapsableContainerBtn" style="display: none">
+                                    <img src="/static/images/warningIcon.svg" alt="error image icon"/>
+                                    <!--Button text is populated by ssurgo_portal_scripts.js-->
+                                </button>
+                                <div id="errorDiv" class="collapsableContainer collapse"></div>
+                                <button id="toggleDuplicateDiv" data-bs-toggle="collapse" data-bs-target="#duplicateDiv" class="collapsableContainerBtn" style="display: none">
+                                    <img src="/static/images/infoIcon.svg" alt="info image icon"/>
+                                </button>
+                                <div id="duplicateDiv" class="collapsableContainer collapse"></div>
+                                <div id='importTableContainer' class="table-container scrollTable">
+                                    <!-- Display databaseUploadGrayIcon.svg when table is empty-->
+                                    <img src="/static/images/databaseUploadGrayIcon.svg" alt="Database Upload Gray Icon" id="databaseUploadGrayIcon"/>
+                                    <div class="loadTableScreen" id="folderLoadingScreen" style="display: none;">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                        <span>Executing pretests, please wait.</span>
+                                    </div>                                                                               
+                                        <!-- Table Data is populated by ssurgo_portal_scripts.js -->
+                                </div>
+                                <div id="folderTableFooter" class="tableFooter">
+                                    <!--Counter is populated by ssurgo_portal_scripts.js-->
+                                    <p id="folderRecordCounter"></p>
+                                </div>
+                        </div>
+                        <div class="tab-pane fade" id="pillsDatabaseTable" role="tabpanel" aria-labelledby="pillsDatabaseTable">
+                            <div id="dbTableContainer" class="table-container scrollTable">
+                                <!-- Display emptyDatabaseGrayIcon.svg when table is empty -->
+                                <img src="/static/images/emptyDatabaseIcon.svg" alt="Empty Database Gray Icon" id="emptyDatabaseGrayIcon" class="filter-gray"/>
+                                <!-- Table Data is populated by ssurgo_portal_scripts.js -->
+                            </div>
+                            <div id="dbTableFooter" class="tableFooter">
+                                <!--Counter is populated by ssurgo_portal_scripts.js-->
+                                <p id="databaseRecordCounter"></p>                          
+                            </div>
+                        </div>
+                    </div>
+                    <!--End Tables on Home Page-->
+                </div>
+                <!--End Table Container-->
+            </div>
+        </div>
+    </div>
+    <!--End Home Page-->
+    <!------------- Help Menu's ------------------->
+    <div class="helpPaneContainer" id="helpPaneContainer" tabindex="0" role="complementary" aria-hidden="true">
+        <div id="helpPaneHeader">
+            <button id="expandHelpMenu" type="button" class="btn" tabindex="0" aria-label="Expand Help Menu" status="colapsed">
+                <img src="/static/images/caret-up-fill.svg" alt="Expand Help Menu icon" style="transform:rotate(-90deg);">
+            </button>            
+            <h3>SSURGO Portal Help Page</h3>
+            <button id="closeHelpMenu" type="button" class="btn" tabindex="0" aria-label="Close">
+                <img src="/static/images/closeIcon.svg" alt="Close button icon"/>
+            </button>
+        </div>
+        <!-- Home Page - Help Pane Content -->
+        <div id="homePageHelpPaneContent" class="helpPageContainer">
+            <div>                
+                <div class="containsSubHeaders">
+                    <button data-bs-toggle="collapse" data-bs-target="#testHelpSubHeaders" class="btn"><img src="/static/images/caret-up-fill.svg" alt="expand section"></button>
+                    <a href="#selectSSURGODatasetsHomeHelpSection">Select SSURGO Datasets to Import - Left Pane Menu</a>
+                    <div id="testHelpSubHeaders" class="collapse">
+                        <div class="containsSubHeaders">
+                            <button data-bs-toggle="collapse" data-bs-target="#testHelpSubSubHeaders" class="btn"><img src="/static/images/caret-up-fill.svg" alt="expand section"></button>
+                            <a href="#testHeading">Test Header 1</a>
+                            <div id="testHelpSubSubHeaders" class="collapse">
+                                <div class="onlyHeader"><a href="#testSubHeading">Test Sub Header 3</a></div>
+                            </div>
+                        </div>
+                        <div class="onlyHeader"><a href="#testHeading2">Test Header 2</a></div>
+                    </div>
+                </div>
+                <div class="onlyHeader">
+                    <a href="#importSSURGOTableHomeHelpSection">Import SSURGO Data Table</a>
+                </div>
+                <div class="onlyHeader">
+                    <a href="#importSSURGOTableHeadersHomeHelpSection">Import SSURGO Data Table Columns</a>
+                </div>                
+                <div class="onlyHeader">
+                    <a href="#advancedImportOptionsHomeHelpSection">Advanced Import Options</a>
+                </div>                
+                <div class="onlyHeader">
+                    <a href="#databaseTableHomeHelpSection">SSURGO Data in Database Table</a>
+                </div>
+            </div>
+            <h4 id="selectSSURGODatasetsHomeHelpSection">Select SSURGO Datasets to Import - Left Pane Menu</h4>
+            <p>The Left Pane Menu allows you to either select an existing database or create a new database to work with. The first step is 
+                to click the <b>Browse</b> button under "Step 1: Select or Create a Database". Once the page opens, you can either select an
+                existing SSURGO Database, or create a new SSURGO Database. </br></br>
+                The Left Pane Menu also allows you to select the location of your SSURGO Data folder. This folder will be
+                the root directory where your SSURGO files are stored. Click the <b>Browse</b> button under "Step 2: Select Location of SSURGO Data" 
+                input box and use the file-selector to select your local SSURGO folder. <i>Note: 
+                It is strongly recommended that you only have SSURGO Data in your selected SSURGO Data Folder. If you 
+                have non-SSURGO content in your folder, you may be presented a long list of folders with errors under 
+                the 'Import SSURGO Data' tab.</i>
+            </p>
+            <h4 id="importSSURGOTableHomeHelpSection">Import SSURGO Data Table</h4>
+            <p>The Import SSURGO Data Table is empty by default. The table will become populated after you select your
+                local SSURGO Data folder on the Left Pane Menu. The Import Data Table displays the Soil Survey Areas (SSAs) 
+                that are present in your SSURGO Data folder. You can use this table to select SSAs that you'd like to 
+                import into your SSURGO Database. If you want to select all SSAs for import, click the <b>Select All</b>
+                checkbox at the top left of the table. Click the <b>Import SSURGO Data</b> button to begin the import process. 
+            </p>
+            <h4 id="importSSURGOTableHeadersHomeHelpSection">Import SSURGO Data Table Columns</h4>
+            <p>Folder SSA Version Date contains the date of the time the SSURGO data was created for the Soil Survey Area. 
+                The Database SSA Version Date contains the version date of SSURGO data already in the SQLite SSURGO Template Database. 
+                If the Database SSA Version Data is blank, it indicates that the soil survey area does not exist in the database. 
+                If it is NOT blank, it means SSURGO data for that soil survey areas already exists in the SQLite SSURGO Template Database.</p>
+            <h4 id="advancedImportOptionsHomeHelpSection">Advanced Import Options</h4>
+            <p>This menu contains additional options for advanced users. The "Advanced Import Options" button will become enabled
+                after you complete Step 2 and select the Location of your SSURGO Data. If you want to load tabular data only, click the 
+                <b>Load Tabular Data Only</b> checkbox. If you want to Disable Dissolve, click the <b>Disable Dissolve </b> 
+                checkbox. If you want to include Interpreation Sub Rules, click the <b>"Include Interpretation Sub Rules"</b> checkbox. 
+                Sub rules are not needed but can add information about how the final interpretation rating was generated. The sub rules are excluded from the SQLite 
+                SSURGO Template database by default because they inflate the size of the database and typically are 
+                not needed by end users. Choosing to include them will not affect the data but will negatively affect 
+                database performance speeds.
+            </p>
+            <h4 id="databaseTableHomeHelpSection">SSURGO Data in Database Table</h4>
+            <p>The SSURGO Data in Database Table is empty by default. The table will become populated after you access a 
+                Database that already has SSURGO Data in it. If the table is empty, the database you selected is empty. 
+                To populate the table, you need to either import data into your selected database from the 'Import SSURGO Data' 
+                tab or select a database that already has data in it. After you've selected a database that's populated 
+                with data, you can use this table to view the data. If you wish to delete data, you can select the records 
+                you wish to delete by clicking the checkbox of that row and then click the <b>Delete Selected SSAs</b> 
+                button on the left pane. If you want to select all SSAs for deletion, click the <b>Select All</b> 
+                checkbox at the top left of the table. 
+            </p>
+        </div>
+        <!-- Select or Create Database Page - Help Pane Content -->
+        <div id="selectOrCreateDatabaseHelpPaneContent" class="helpPageContainer"> 
+            <div>
+                <div class="onlyHeader"><a href="#pageOverviewDatabaseHelpSection">Page Overview</a></div>
+                <div class="onlyHeader"><a href="#setFilePathDatabaseHelpSection">Set File Path of Database</a></div>
+                <div class="onlyHeader"><a href="#selectDatabaseHelpSection">Select an Existing Database</a></div>
+                <div class="onlyHeader"><a href="#createDatabaseHelpSection">Create a New Database</a>  </div>              
+            </div>
+            <h4 id="pageOverviewDatabaseHelpSection">Page Overview</h4>
+            <p> On this screen you have two choices. You can either create a new database or access an existing one. 
+                Which ever route you choose, you first need to select your directory location. This can be accomplished 
+                by using the interactive directory selector under the 'Set File Path of Database' label, or by clicking 
+                the <b>Editor</b> button (looks like a pencil icon) and manually entering the directory location. This 
+                will be the directory location of where your existing databases are saved, or the location where your 
+                new database will be created.  
+            <h4 id="setFilePathDatabaseHelpSection">Set File Path of Database</h4>
+            <p>There are three ways to change the file path:</br>
+                <b>1. Click on folder names to move backwards.</b></br>
+                You can click on any of the folder names in the file path to move back through folders.  
+                For example, if the file path says “C: > SSURGO Portal > Databases > Oregon”, you can click on 'Databases' 
+                to change it to C: > SSURGO Portal > Databases”.</br>              
+                <b>2. Manually edit the path.</b></br>
+                You can click on the Edit icon located on the far right of the path and manually change the path.  You can 
+                manually type in a new path, or you can copy and paste path from another location.  
+                This is also where you can change the drive letter. Upon initial use, the application defaults to your 
+                C: drive but you can manually change it any other letter (D:\, E:\, etc…).</br>
+                <b>3. Browse through folders in the section below the file path to move forwards.</b></br>
+                You can change the path by clicking on folders listed in the section below the path.</p>
+            <h4 id="selectDatabaseHelpSection">Select an Existing Database</h4> 
+            <p>Once you're in the directory where your databases are saved, select your SSURGO Database file 
+                (underneath the 'Files' label) by clicking on it. If your database name is too long, you can view 
+                the full name by hovering over a file. Clicking your database file will close this page and take you 
+                back to the previous screen where you can import data. 
+            </p>
+            <h4 id="createDatabaseHelpSection">Create a New Database</h4>
+            <p> Once you're in the directory where you want your new database to be saved, click the <b>Create New Database</b> 
+                button. A menu will then pop-up which will allow you to enter the name of your new database. You can also change 
+                the database type by selecting a different option in the dropdown menu. It will warn you if you're trying 
+                to create a new database that already exists. You must click the <b>Overwrite Existing Database</b> checkbox 
+                if you wish to overwrite your existing database. If not, you will need to change your directory, database name, 
+                or database type. Clicking the <b>Save Database</b> button will create your new database, close this page and 
+                take you back to the previous screen where you can import data. 
+            </p>
+        </div>
+        <!-- Select or Create Database Page - Help Pane Content -->
+        <div id="selectLocationOfSsurgoDataFolderHelpPaneContent" class="helpPageContainer">
+            <div>
+                <div class="onlyHeader"><a href="#setFilePathSSURGODataHelpSection">Set File Path of SSURGO Data</a></div>
+                <div class="onlyHeader"><a href="#setLocationSSURGODataHelpSection">Set Location of SSURGO Data</a></div>
+            </div>
+            <h4 id="setFilePathSSURGODataHelpSection">Set File Path of SSURGO Data</h4>
+            <p>There are three ways to change the file path:</br>
+                <b>1. Click on folder names to move backwards.</b></br>
+                You can click on any of the folder names in the file path to move back through folders.  
+                For example, if the file path says “C: > SSURGO Portal > Databases > Oregon”, you can click on 'Databases' 
+                to change it to C: > SSURGO Portal > Databases”.</br>              
+                <b>2. Manually edit the path.</b></br>
+                You can click on the Edit icon located on the far right of the path and manually change the path.  You can 
+                manually type in a new path, or you can copy and paste path from another location.  
+                This is also where you can change the drive letter. Upon initial use, the application defaults to your 
+                C: drive but you can manually change it any other letter (D:\, E:\, etc…).</br>
+                <b>3. Browse through folders in the section below the file path to move forwards.</b></br>
+                You can change the path by clicking on folders listed in the section below the path.</p> 
+            <h4 id="setLocationSSURGODataHelpSection">Select Location of SSURGO Data</h4>
+            <p> This page is for selecting the location of your SSURGO Data folder. This can be accomplished 
+                by using the interactive directory selector under the 'Set File Path of SSURGO Data' label, or by clicking 
+                the <b>Editor</b> button (looks like a pencil icon) and manually entering the directory location. This 
+                will be the root folder where your SSURGO Data Files are stored. You'll know you're in the correct directory 
+                once your Area Symbol folders are shown underneath the 'Folders' label. Once you're in the root folder,
+                click the <b>Finalize File Path of SSURGO Data</b> button. Clicking this button will finalize the folder path,
+                close this page and take you back to the previous screen where you can import data. 
+            </p>
+        </div>
+        <!-- Contact Us - Help Pane Content -->
+        <div id="contactUsHelpPaneContent" class="helpPageContainer">
+            <h4>Request Assistance</h4>
+            <p>If you need assistance, you may email the USDA-NRCS Soils Hotline at: </br>
+                <b>SoilsHotline@usda.gov</b></br></br>
+                
+                OR call us at:</br>
+                <b>402-437-5378 OR 402-437-5379</b></br></br>
+
+                In order to provide you support, we'll need the following information. Please copy
+                and paste the information below into your email along with a detailed 
+                description of the issue(s) you're facing. </br></br>
+
+                <b>Application Version: <span id="applicationVersion"></span></br>
+                   SQLite SSURGO Template Version: <span id="sqliteSSURGOTemplateVersion"></span></br>
+                   SSURGO Version: <span id="ssurgoVersion"></span></br>
+                </b></br>
+                
+                We may also need your local log file to investigate further. If we request your log file,
+                it can be found at: </br>
+                <b><span id="logFileLocation"></span></b>
+            </p>
+        </div>
+    </div>
+    <!-- End Help Menu's ------------------>    
+    <!--------- Home Page Menu Selections -------------->            
+    <!--------- Select or Create Database Page--------->
+    <div class="container" id="selectDatabasePage" role="dialog" style="display: none">
+        <div class="modal-header">
+            <button class="btn" id="selectDatabasePageBackBtn" aria-label="Close"><img src="/static/images/arrow-left-circle.svg" alt="Dissmiss Select Database Page"/></button>                    
+            <h1 class="modal-title" id="selectDatabasePageLabel">Select or Create a Database
+                <button type="button" id="toggleDatabaseHelpPane"class="btn helpPaneBtn" onclick="toggleHelpPaneContent('selectOrCreateDatabaseHelpPaneContent')">
+                    <img src="/static/images/QuestionMark.svg" alt="Help QuestionMark"/>
+                </button>
+            </h1>
+        </div>             
+        <div id="databaseFolderTree" role="tabpanel" aria-labelledby="selectDatabasePageLabel">
+            <div id='getUserDatabase' populated='False'>
+                <h2 class='labels'>Set File Path of Database
+                    <a tabindex="0" role="button" class="btn" id="filePathPopoverDatabase" data-bs-container="body" data-bs-trigger="focus" data-bs-toggle="popover" data-bs-placement="right" 
+                    data-bs-content='Please refer to the help menu for guidance on setting your file path'>
+                        <img src="/static/images/infoIcon.svg" alt="Info Icon"/>
+                    </a>
+                </h2>
+                <div id='filePathContainer' class="treeLabels filePathContainer searchBar">
+                    <div id='clickablePathContainer' class="clickablePathContainer"></div>
+                    <input id='databaseTextBox' class="databaseTextBox" style="display: none;" onchange='executeFolderTreeRequest("databaseTreeViewTable", updatedValue("databaseTextBox"), true)' aria-label="Set File Path to Access an Existing Database:"></input>
+                    <button id='displayTreePath' class="switchInputs btn" label="displayTreePathButton"><img src="/static/images/changePathToEdit.svg" alt="change input button"/></button>
+                </div><!--populated by javascript-->
+                <div class="folderHeader">
+                    <button id='databaseSearchBtn' class='btn'><img src='/static/images/searchIcon.svg' alt='Search Button'/></button>
+                </div>
+                <div id="databaseSearch" style="display: none;" class="filePathContainer searchBar">
+                    <input id="databaseSearchText" aria-label="Search bar" placeholder="Search for a folder or file here..."></input>
+                    <button id='databaseSearchTextBtn' class="btn"><img src="/static/images/closeIcon.svg" alt="Close Search Button"/></button>
+                </div>
+                <div id="databaseTreeViewTableContainer" class="table-container scrollTable"></div>
+                <span><i>Note:<ul>
+                    <li>Only "Folders", "Geopackage" database files, and "SQLite" database files are shown on this screen.</li>
+                    <li>The SpatiaLite databases use the SQLite file extension.</li>
+                    <li>If you are going to modify an existing SSURGO Template database that already contains SSURGO data, it is recommended to create a 
+                        backup before proceeding. This is particularly important for larger databases. </li>
+                </ul></i></span>
+            </div>
+            <div class="databaseFolderTreeBottomContainer">
+                <button type="button" class="btn buttonWithCircleIcon createNewDbBtn" data-bs-toggle="modal" data-bs-target="#createNewDatabaseModal" onClick="populateDatabaseTypeDropdown()">
+                    <img src="/static/images/plusIcon.svg" alt="Create new database icon">
+                    <p>Click to Create New Database</p>
+                </button>
+                <div id="textTemplatesContainer">
+                    <button id="textTemplatesOptionsBtn" data-bs-toggle="collapse" data-bs-target="#textTemplatesOptions" class="collapsableContainerBtn btn toggleDisableOnLoad"><p><u>Internal NRCS Employee Options</u></p></button>
+                    <div id="textTemplatesOptions" class="collapsableContainer collapse">
+                        <div>      
+                            <input type="checkbox" id="textTemplatesCheckbox" aria-label="Text Templates Checkbox"> </input>                          
+                            <label for="textTemplatesCheckbox"> 
+                                Click to enable database options for SSURGO from NASIS 
+                                or Staging Server before creating a new database
+                            </label>
+                        </div>
+                        <div id="textTemplatesWarningContainer" style="display: none">
+                            <p id="textTemplatesWarning" class="warningMessage">
+                                <i>NOTE: This option is rarely selected and is only designed for Internal 
+                                   NASIS or Staging Server users. It creates special databases that
+                                   define most table keys as TEXT instead of INTEGER. Users of SSURGO data 
+                                   downloaded from Web Soil Survey do not need these TEXT key templates.</i>
+                            </p>
+                        </div>  
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </div>
+    <!--End Select Data Base Modal from Home Page-->
+    <!-----------Container for Create New Database Modal--------------->
+    <div class="modal fade" id="createNewDatabaseModal" tabindex="-1" aria-label="Create new database form" role="form">
+        <div class="modal-dialog createNewDatabaseModalContainer">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title">Create New Database</h1>
+              <button class="btn" data-bs-dismiss="modal" aria-label="Close"><img alt="Close button icon" src="/static/images/closeIcon.svg"/></button>
+            </div>
+            <div class="modal-body">
+                <div class="createNewDatabaseNameContainer">
+                    <label for="createNewDatabaseName" class="createNewDatabaseLabels">New Database Name</label>
+                    <input type="text" id="createNewDatabaseName" aria-label="database name textbox" placeholder="Enter new database name here..." onchange="displayNewDatabasePath()" value="NewSSURGODatabase">
+                </div> 
+                <div class="createNewDatabaseTypeContainer">
+                    <label for="templateTypeDropdown" class="createNewDatabaseLabels">Choose Database Type</label>
+                    <select name="Database Template Type" id="templateTypeDropdown" aria-label="Database Type dropdown" onchange="displayNewDatabasePath()"></select>
+                </div>
+                <div class="createNewDatabaseLocationContainer">
+                    <label for="createNewDatabaseLocation" class="createNewDatabaseLabels">New Database will be created in:</label>
+                    <!-- JS Code populates 'createNewDatabaseLocation' with full path displayed - Example: C:\Folder1\Folder2\Name_of_new_Database.gpkg-->
+                    <p id="createNewDatabaseLocation"></p> 
+                    <div id="overwriteWarningContainer" style="display: none">
+                        <p id="overwriteWarningMessage"><i>Note: This database already exists at this file location. Do you want to overwrite it? If not, please change your directory, database name or database type.</i></p>
+                        <input type="checkbox" id="overwriteCheckbox" aria-label="Overwrite Existing Database checkbox" onclick="displayNewDatabasePath()"> Overwrite Existing Database?</input>
+                    </div>
+                    <p id="createNewDatabaseErrorMessage" class="warningMessage"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="btn" class="btn cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                <button type="btn" class="btn saveDbBtn" id="createNewDbBtn" onclick='createNewTemplateDatabase("templateTypeDropdown", "databaseTextBox", "createNewDatabaseName")'>Save Database</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <!-- End Container for Create New Database Modal-->
+    <!-----------Select SSA SSURGO Data Folder Page from Home Page---------------->
+    <div class="container" id="selectSSAPage" role="main" style="display: none">
+        <div class="modal-header">
+            <button class="btn" id="selectSSAPageBackBtn" aria-label="Close"><img src="/static/images/arrow-left-circle.svg" alt="Dissmiss SSA Location Page"/></button>                    
+            <h1 class="modal-title" id="selectSSAPageLabel">Select Location of SSURGO Data
+                <button type="button" id="toggleSsurgoHelpPane" class="btn helpPaneBtn" onclick="toggleHelpPaneContent('selectLocationOfSsurgoDataFolderHelpPaneContent')">
+                    <img src="/static/images/QuestionMark.svg" alt="Help QuestionMark"/>
+                </button>
+            </h1>
+        </div>
+        <div id='ssaFolderTree' role="tabpanel" aria-labelledby="selectSSAPageLabel" populated='False'>
+            <h2 class='labels'>Set File Path of SSURGO Data
+                <a tabindex="0" role="button" class="btn" id="filePathPopoverSurggo" data-bs-container="body" data-bs-trigger="focus" data-bs-toggle="popover" data-bs-placement="right" 
+                data-bs-content='Please refer to the help menu for guidance on setting your file path'>
+                    <img src="/static/images/infoIcon.svg" alt="Info Icon"/>
+                </a>
+            </h2>
+            <div id='ssaFilePathContainer' class="filePathContainer searchBar">
+                <div id='ssaClickablePathContainer' class="clickablePathContainer"></div>
+                <input id='ssaTextBox' aria-label="Select folder path for SSURGO downloads folder" class="databaseTextBox" style="display: none;" onchange='executeFolderTreeRequest("importTreeViewTable", updatedValue("ssaTextBox"), false)'>
+                <button id='ssaDisplayTreePath' class="switchInputs" label="displayTreePathButton"><img src="/static/images/changePathToEdit.svg" alt="change input button"/></button>
+            </div>
+            <div id='ssaFolderHeader' class="folderHeader">
+                <button id='ssaSearchBtn' class='btn'><img src='/static/images/searchIcon.svg' alt='Search Button'/></button>
+            </div>
+            <div id="ssaSearchContainer" style="display: none;" class="filePathContainer searchBar">
+                <input id="ssaSearchTextbox" placeholder="Search for a folder or file here..." aria-label="Search bar"></input>
+                <button id='ssaSearchTextBtn' class="btn"><img src="/static/images/closeIcon.svg" alt="Close Search Button"/></button>
+            </div>
+            <!--Populated by ssurgo_portal_scripts.js-->
+            <div id="importTreeViewTableContainer" class="table-container scrollTable folderTable"></div>
+            <span><i>Note: SSURGO downloads are delivered in zip files. You must unzip them to make them available for import. Additionally, only folders are presented on this screen.</i></span>
+            <div>
+                <button id="selectSsurgoFolderFinalizeBtn" class="btn buttonWithCircleIcon" style="max-width: fit-content; margin-top: 20px;">
+                    <img src="static/images/rightArrow.svg" alt="Finalize path icon">
+                    <p>Click here to finalize file path<br>of SSURGO Data</p>
+                </button>                 
+            </div>
+        </div>
+    </div>    
+    <!--End Select SSA SSURGO Data Folder Modal from Home Page-->
+    <!--Warning/Error Modals-->
+    <div class="modal fade" id="existingSSAModal" tabindex="-1" role="dialog" aria-labelledby="existingSSAModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 50% !important; margin: auto; height: fit-content;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="existingSSAModalTitle"> 
+                        <span>                            
+                            <img src="static/images/warningIcon.svg" alt="warning icon">
+                            Existing Area Symbol Warning
+                        </span>
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <p id="existingSSAModalMessage" style="margin-bottom: 25px;"></p>
+                    <p>Continuing to import will override any overlapping areasymbols. Do you wish to proceed?</p>
+                    
+                </div>
+                <div class="modal-footer">                    
+                    <button class="btn cancelBtn" data-bs-dismiss="modal" id="cancelExistingImport">Cancel</button>
+                    <button class="btn btn-primary" data-bs-dismiss="modal" id="continueExistingImport">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="duplicateSSAModal" tabindex="-1" role="dialog" aria-labelledby="duplicateSSAModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 50% !important; margin: auto; height: fit-content;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="duplicateSSAModalTitle"> 
+                        <span>                            
+                            <img src="static/images/warningIcon.svg" alt="warning icon">
+                            Duplicate Area Symbol Error
+                        </span>
+                    </h5>
+                    <button type="button" class="close btn" data-bs-dismiss="modal" aria-label="Close">
+                        <img src="static/images/closeIcon.svg" alt="close modal">
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="duplicateSSAModalMessage" style="margin-bottom: 25px;"></p>
+                    <p>The above datasets contain duplicate areasymbols. Please deselect all but one of the folders containing the duplicate area symbols and try again.</p>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button class="btn cancelBtn" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="deleteWarningModal" tabindex="-1" role="dialog" aria-labelledby="deleteWarningModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 50% !important; margin: auto; height: fit-content;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteWarningModalTitle"> 
+                        <span>                            
+                            <img src="static/images/warningIcon.svg" alt="warning icon">
+                            Data Deletion Warning
+                        </span>
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteDatabaseMessage" style="margin-bottom: 25px;"></p> <!--This is populated by js-->
+                    While not required, we recommend that instead of deleting all data from your current database, you click Cancel, and create a brand new database.
+                    If you still wish to proceed, click Continue.</p>
+                </div>
+                <div class="modal-footer">                    
+                    <button class="btn cancelBtn" data-bs-dismiss="modal" id="cancelDelete">Cancel</button>
+                    <button class="btn btn-primary" data-bs-dismiss="modal" id="continueDelete">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End Warning/Error Modals-->
+    <!--Loading Page modal from Home Page-->
+    <div class="modal fade" id="progressScreen" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document" style="height:inherit;">
+            <div class="modal-content" style="height: fit-content; min-height: 100vh;">
+                <div class="modal-body" id='progressScreenModal' populated='False'>
+                    <div id="progressScreenContainer" class="progressScreen">
+                        <!--Toggled by ssurgo_portal_scripts.js-->
+                        <span id="progressTitle"></span> <!-- Consider wrapping this inside a <h#> tag. Currently doesn't stand out -->
+                        <img src="/static/images/SSAsInDatabaseIcon.svg" id="progressImgImport" alt="progressImageImport" hidden>
+                        <img src="/static/images/DeleteSSAsFromDatabaseIcon.svg" id="progressImgDelete" alt="progressImageDelete" hidden> <!--Populated by ssurgo_portal_scripts.js-->
+                        <p id="progressText"></p> <!--Populated by ssurgo_portal_scripts.js-->
+                        <!--Values are changed by ssurgo_portal_scripts.js-->                        
+                        <div class="timer">
+                            <p>Elapsed Time:</p>
+                            <div id="timerCount"></div>
+                        </div>
+                        <div class='progress progressBarSuccessContainer'>
+                            <div id="progressBarSuccess" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 2%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div id="progressBarFail" class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <p id="progressCounterMessage"></p><!--Populated by ssurgo_portal_scripts.js-->
+                        <button  id="toggleProgressErrorDiv" class="collapsableContainerBtn" data-bs-toggle="collapse" data-bs-target="#progressErrorDiv" style="display: none">
+                            <img src="/static/images/failedIcon.svg" alt="failed icon image"/>
+                            <!--Button text is populated by ssurgo_portal_scripts.js-->
+                        </button>
+                        <div id="progressErrorDiv" class="collapsableContainer collapse"></div>
+                        <button  id="progressListButton" class="collapsableContainerBtn" data-bs-toggle="collapse" data-bs-target="#progressList" style="display: none">
+                            <img src="/static/images/checkmarkFillGreen.svg" alt="successful icon image"/>
+                            <p id="progressListButtonText"></p> <!--Populated by ssurgo_portal_scripts.js-->
+                        </button>                        
+                        <div id="progressList" class="collapsableContainer collapse">
+                        </div>
+                        <button class="btn" id="stopProgress" onclick="stoppingProgress()">Stop</button>
+                        <button class="btn" id="closeProgressModal" data-bs-dismiss="modal" aria-label="Close" style="display: none;">Next</button>
+                    </div>
+                    <!--<div id="loadedMessageContainer" style="display: none;">
+                        <p id="loadedMessage">#### Loaded into database {DBName} from {SSA Parent Folder}</p>
+                        <button class="btn" data-bs-dismiss="modal" aria-label="Close">Acknowledge</button>
+                    </div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End Loading Page modal from Home Page-->
+    <!--End Home Page Menu Selections-->
+    <!--Start Footer-->
+    <!-- <div class="col-12" class="footer" role="footer">
+        Placeholder footer. Will add-in at a later time if desired by business.
+    </div> -->
+    <!--End Footer-->    
+    <div class="modal fade" id="serverClosedModal" tabindex="-1" role="dialog" aria-labelledby="serverClosedTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="serverClosedTitle"><img src="/static/images/warningIcon.svg" style="margin-right: 5px;" alt="error image icon"/>Server Closed Error</h5>
+            </div>
+            <div class="modal-body">
+                ERROR: The SSURGO Portal application has stopped working and any active data importing or data deleting has ceased. 
+                This problem typically occurs due to the webpage being refreshed or the command line interface being closed manually. 
+                To resolve this issue, please close this webpage and relaunch SSURGO Portal. 
+                In the future, do not close the command line window or hit the webpage refresh button when actively running SSURGO Portal.
+            </div>
+          </div>
+        </div>
+    </div>
+    <script src="/static/jquery-3.6.0.min.js"></script>
+    <script src="/static/popper.min.js"></script>
+    <script src="/static/bootstrap.min.js"></script>
+    <script type='text/javascript', src="/static/ssurgo_portal_scripts.js"></script>
+</body>
+</html>
