@@ -32,7 +32,6 @@ import logging
 import os
 import sys
 import time
-from ctypes import windll
 
 import config
 from dlcore import dispatch
@@ -190,6 +189,7 @@ def main(argv):
         try:
             from dphost import webpage
             if config.osType == "nt":
+                from ctypes import windll
                 #change the title of the bottle server on a windows machine
                 windll.kernel32.SetConsoleTitleW("SSURGO Portal - DO NOT CLOSE")
             
