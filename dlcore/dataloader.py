@@ -155,8 +155,8 @@ class dataloader:
 
             for rw in tblist:
                 if not IsWSSAoi:
-                    shpfilepath= os.path.join(shapefileFolder, str(rw[1]) + "_" + areasym  + ".shp")
-                    shpfilename= str(rw[1]) + "_" + areasym + ".shp"
+                    shpfilepath= os.path.join(shapefileFolder, str(rw[1]) + "_" + areasym.lower()  + ".shp")
+                    shpfilename= str(rw[1]) + "_" + areasym.lower() + ".shp"
                 else:
                     shpfilepath= os.path.join(shapefileFolder, str(rw[2]) + ".shp")
                     shpfilename= str(rw[2]) + ".shp"
@@ -200,8 +200,8 @@ class dataloader:
 
             for rw in tblist:
                 if not IsWSSAoi:
-                    shpfilepath= os.path.join(shapefileFolder, str(rw[0]) + "_" + areasym  + ".shp")
-                    shpfilename= str(rw[0]) + "_" + areasym + ".shp"
+                    shpfilepath= os.path.join(shapefileFolder, str(rw[0]) + "_" + areasym.lower()  + ".shp")
+                    shpfilename= str(rw[0]) + "_" + areasym.lower() + ".shp"
                 else:
                     shpfilepath= os.path.join(shapefileFolder, str(rw[1]) + ".shp")
                     shpfilename= str(rw[1]) + ".shp"
@@ -988,7 +988,7 @@ class dataloader:
                 src = len(rows) * ['?']
                 tbinspfolderpath = os.path.join(data_file,'spatial')
                 if not IsWSSAoi:
-                    tbspfilename = str(rw[2]) + "_" + ssa  + ".txt"
+                    tbspfilename = str(rw[2]) + "_" + ssa.lower()  + ".txt"
                 else:
                     tbspfilename = str(rw[3]) + ".txt"
                 tbinspfilepath = path.join(tbinspfolderpath, tbspfilename)
@@ -1219,7 +1219,7 @@ class dataloader:
             if not IsWSSAoi:
                 for rw in tblist:
                     sptbname  = str(rw[0])
-                    spfilename= str(rw[1]) + "_" + areasym
+                    spfilename= str(rw[1]) + "_" + areasym.lower()
                     shapefiles[sptbname] = spfilename
             else:
 
@@ -1309,12 +1309,12 @@ class dataloader:
             distanceSquared = 0
             for rw in tblist:
                 if not IsWSSAoi:
-                    spfilename = str(rw[0]) + "_" + ssaName + ".shp"
+                    spfilename = str(rw[0]) + "_" + ssaName.lower() + ".shp"
                 else:
                     spfilename = str(rw[1]) + ".shp"
                 shapefilepath = path.join(root, subfolder, "spatial", spfilename)
                 if not os.path.isfile(shapefilepath):
-                    return (None, None, None, None, None, None, None)
+                    return (None, None, None, None, None)
                 dataSource = driver.Open(shapefilepath, 0)
                 layer = dataSource.GetLayer()
                 originX = -180
