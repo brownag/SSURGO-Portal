@@ -1301,7 +1301,7 @@ class dataloader:
             #filename = f'soilsa_a_{ssaName}.shp'
             (status, tbcon, errormessage) = DlUtilities.create_connection(database)
             if not status:
-                return  (None, None, None, None, None)
+                return  (None, None, None, None, None, None, None)
             cursor = tbcon.cursor()
             cursor.execute( "SELECT iefilename,iefilenameaoi from mdstattabs where tabphyname in ('sapolygon')" )
             tblist = cursor.fetchall()
@@ -1314,7 +1314,7 @@ class dataloader:
                     spfilename = str(rw[1]) + ".shp"
                 shapefilepath = path.join(root, subfolder, "spatial", spfilename)
                 if not os.path.isfile(shapefilepath):
-                    return (None, None, None, None, None)
+                    return (None, None, None, None, None, None, None)
                 dataSource = driver.Open(shapefilepath, 0)
                 layer = dataSource.GetLayer()
                 originX = -180
